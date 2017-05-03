@@ -29,3 +29,11 @@ export function each(target:any, callback:Function){
     }
     return rlt;
 }
+
+export function join(target:any, field?:string){
+    let rlt = '';
+    each(target, function(item, i){
+        rlt += field? item[field]:item;
+    });
+    return rlt;
+}
