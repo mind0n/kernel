@@ -37,3 +37,33 @@ export function join(target:any, field?:string){
     });
     return rlt;
 }
+
+export function add(target:{length:number}, item:any):any{
+    if (!target){
+        return [item];
+    }
+    if (target.length === undefined){
+        return [target, item];
+    }
+    target[target.length] = item;
+    return target;
+}
+
+export function all(target:any, processor:Function){
+    if (!target || !processor){
+        return;
+    }
+    if (target.length === undefined){
+        for(let i in target){
+            if (processor(i, target[i])){
+                return target[i];
+            }
+        }
+    }else{
+        for(let i=0; i<target.length;i++){
+            if (processor(i, target[i])){
+                return target[i];
+            }
+        }
+    }
+}
