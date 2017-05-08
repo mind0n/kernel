@@ -4,9 +4,10 @@ export class Instance{
     constructor(target:any){
         this.target = target;
         let self = <any>this;
+        let islist = target?target.length !== undefined:false;
         for(let i in Instance.workers){
             self[i] = function(...args:any[]){
-                if (target.length !== undefined){
+                if (islist){
                     for(let j in target){
                         let item = target[j];
                         try{

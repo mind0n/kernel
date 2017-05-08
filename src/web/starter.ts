@@ -1,9 +1,12 @@
 import {add} from "../common";
+import {Instance} from "../instance";
 export function w(input:any){
     let t = typeof(input);
     if (t == 'function'){
         Starter.startonce(input);
+        return;
     }
+    return new Instance(input);
 }
 
 export class Starter{
