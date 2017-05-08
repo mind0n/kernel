@@ -8,7 +8,18 @@ export function extend(s:any, d:any, ig?:any){
     }
 }
 
-export function each(target:any, callback:Function){
+export function find(target:any[], field:string, val:any){
+    if (!target || !field){
+        return;
+    }
+    return all(target, function(item:any, i:number){
+        if (item[field] == val){
+            return true;
+        }
+    });
+}
+
+export function all(target:any, callback:Function){
     let rlt:any = null;
     if (callback){
         if (target instanceof Array){
@@ -32,7 +43,7 @@ export function each(target:any, callback:Function){
 
 export function join(target:any, field?:string){
     let rlt = '';
-    each(target, function(item, i){
+    all(target, function(item, i){
         rlt += field? item[field]:item;
     });
     return rlt;
@@ -47,23 +58,4 @@ export function add(target:{length:number}, item:any):any{
     }
     target[target.length] = item;
     return target;
-}
-
-export function all(target:any, processor:Function){
-    if (!target || !processor){
-        return;
-    }
-    if (target.length === undefined){
-        for(let i in target){
-            if (processor(i, target[i])){
-                return target[i];
-            }
-        }
-    }else{
-        for(let i=0; i<target.length;i++){
-            if (processor(i, target[i])){
-                return target[i];
-            }
-        }
-    }
 }
