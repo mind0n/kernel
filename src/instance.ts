@@ -1,3 +1,5 @@
+import {all} from './common';
+
 export class Instance{
     private static workers:any = {};
     target:any;
