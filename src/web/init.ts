@@ -1,9 +1,10 @@
 import {w} from './starter';
 import {Instance} from '../instance';
-
+import {addcss, delcss} from "./element";
 let win = <any>window;
 
 win.w = w;
+
 
 function initCover(target:any, settings:any){
     if (!target){
@@ -40,6 +41,8 @@ function initCover(target:any, settings:any){
 }
 
 export function init(){
+    win.addcss = addcss;
+    win.delcss = delcss;
     Instance.regist('cover', function(settings:any){
         let target =  this;
         target = initCover(target, settings);
