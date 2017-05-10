@@ -40,20 +40,35 @@ export function all(target:any, callback:Function){
     }
     return rlt;
 }
-export function clone(target:any){
+function uid(prefix?:string):string{
+    if (!prefix){
+        prefix = '$u$';
+    }
+    let d = new Date();
+    let s = `${prefix}-${d.getHours()}${d.getMinutes()}${d.getSeconds()}${d.getMilliseconds()}${Math.floor(Math.random() * 100)}-${d.getFullYear()}${d.getMonth()}${d.getDate()}`;
+    return s;
+}
+export function clone(target:any, id?:string){
+    let KEY = "$cloneid$";
+    id = id || uid('$cl$');
     if (target === undefined || target === null){
         return target;
     }
     let rlt:any = target;
+    if (target[KEY] && target[KEY] == id){
+        return target;
+    }
     if (target instanceof Array){
         rlt = [];
+        target[KEY] = id;
         all(target, function(item, i){
-            rlt[rlt.length] = clone(item);
+            rlt[rlt.length] = clone(item, id);
         });
     }else if (typeof(target) == 'object'){
         rlt = {};
+        target[KEY] = id;
         all(target, function(item, k){
-            rlt[k] = clone(item);
+            rlt[k] = clone(item, id);
         });
     }
     return rlt;
