@@ -40,7 +40,24 @@ export function all(target:any, callback:Function){
     }
     return rlt;
 }
-
+export function clone(target:any){
+    if (target === undefined || target === null){
+        return target;
+    }
+    let rlt:any = target;
+    if (target instanceof Array){
+        rlt = [];
+        all(target, function(item, i){
+            rlt[rlt.length] = clone(item);
+        });
+    }else if (typeof(target) == 'object'){
+        rlt = {};
+        all(target, function(item, k){
+            rlt[k] = clone(item);
+        });
+    }
+    return rlt;
+}
 export function join(target:any, field?:string){
     let rlt = '';
     all(target, function(item, i){
