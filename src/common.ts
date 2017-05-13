@@ -52,7 +52,7 @@ export function all(target:any, callback:Function, prepare?:Function){
     }
     return rlt;
 }
-function uid(prefix?:string):string{
+export function uid(prefix?:string):string{
     if (!prefix){
         prefix = '$u$';
     }
