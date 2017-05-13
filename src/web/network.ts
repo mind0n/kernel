@@ -1,4 +1,10 @@
 import {all} from '../common';
+
+interface ActiveXObject {
+    new (s: string): any;
+}
+declare var ActiveXObject: ActiveXObject;
+
 var XMLHttpFactories = [
     function () {return new XMLHttpRequest()},
     function () {return new ActiveXObject("Msxml2.XMLHTTP")},
@@ -44,7 +50,7 @@ function sendRequest(settings:any){
     let ispost = method == 'post';
     req.open(method, url, true, settings.user, settings.pwd);
     if (!settings.header){
-        settings.header = {'User-Agent': 'XMLHTTP/1.0'};
+        settings.header = {};
     }
     if (ispost && !settings.header['content-type']){
         settings.header['content-type'] = 'application/x-www-form-urlencoded';
@@ -92,6 +98,7 @@ export function send(url:string, settings:any, method?:string):Promise<any>{
         settings.method = method || 'get';
     }
     settings.json = true;
+    settings.url = url;
     let p = new Promise((r, j)=>{
         settings.success = function(text:string){
             handleResponse(text, settings, r, j);
