@@ -90,6 +90,14 @@ export function join(target:any, field?:string){
     return rlt;
 }
 
+export function clear(target:{pop:Function, length:number}){
+    if (target){
+        while(target.length > 0){
+            target.pop();
+        }
+    }
+    return target;
+}
 export function add(target:{length:number}, item:any):any{
     if (!target){
         return [item];
