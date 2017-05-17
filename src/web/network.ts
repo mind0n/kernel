@@ -52,7 +52,7 @@ function sendRequest(settings:any){
     if (!settings.header){
         settings.header = {};
     }
-    if (ispost && !settings.header['content-type']){
+    if (ispost && !settings.upload && !settings.header['content-type']){
         settings.header['content-type'] = 'application/x-www-form-urlencoded';
     }
     all(settings.header, function(item:any, i:string){
@@ -69,7 +69,7 @@ function sendRequest(settings:any){
     }
     let fd:any = null;
     if (ispost){
-        if (settings.header['content-type'].indexOf('x-www-form-urlencoded')>0){
+        if (!settings.upload){
             fd = toformdata(settings.form);
         }else{
             fd = settings.form;
@@ -93,7 +93,10 @@ function handleResponse(text:string, settings:any, shandler:Function, ehandler:F
     }
     shandler(a);
 }
-export function send(url:string, settings:any, method?:string):Promise<any>{
+export function send(url:string, settings?:any, method?:string):Promise<any>{
+    if (!settings){
+        settings = {};
+    }
     if (!settings.method){
         settings.method = method || 'get';
     }

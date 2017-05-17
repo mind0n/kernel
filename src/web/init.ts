@@ -1,6 +1,7 @@
 import {w} from './starter';
 import {Instance} from '../instance';
 import {addcss, delcss} from "./element";
+import {send} from './network';
 let win = <any>window;
 
 win.w = w;
@@ -43,6 +44,7 @@ function initCover(target:any, settings:any){
 export function init(){
     win.addcss = addcss;
     win.delcss = delcss;
+    win.send = send;
     Instance.regist('cover', function(settings:any){
         let target =  this;
         target = initCover(target, settings);
