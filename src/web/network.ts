@@ -73,6 +73,9 @@ function sendRequest(settings:any){
             fd = toformdata(settings.form);
         }else{
             fd = settings.form;
+            if (fd.tagName){
+                fd = new FormData(fd);
+            }
         }
     }
     req.send(fd);
