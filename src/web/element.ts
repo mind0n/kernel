@@ -1,12 +1,14 @@
 export function addcss(target:any, name:string){
     let classes = target.className.trim();
     if (classes.indexOf(name) != 0 && classes.indexOf(' ' + name)<0){
-        this.className = `${this.className} ${name}`;
+        let s = `${classes} ${name}`;
+        target.className = s;
     }
 }
 export function delcss(target:any, name:string){
-    let classes = this.className.trim();
+    let classes = target.className.trim();
     if (classes.indexOf(name) == 0 || classes.indexOf(' ' + name)>=0){
-        this.className = this.className.replace(name, '');
+        let s = classes.replace(name, '');
+        target.className = s;
     }
 }
