@@ -58,6 +58,13 @@ function sendRequest(settings:any){
     all(settings.header, function(item:any, i:string){
         req.setRequestHeader(i, item);
     });
+    if (settings.progress){
+        if (req.upload){
+            req.upload.onprogress = settings.progress;
+        }else{
+            req.onprogress = settings.progress;
+        }
+    }
     req.onreadystatechange = function(){
         if (req.readyState == 4){
             if (req.status>=200 && req.status <= 304){
