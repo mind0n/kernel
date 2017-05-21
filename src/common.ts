@@ -28,7 +28,7 @@ export function all(target:any, callback:Function, prepare?:Function){
             }
             return rlt;
         }
-        if (target instanceof Array){
+        if (target instanceof Array || target.length !== undefined){
             if (prepare){
                 prepare(true);
             }
