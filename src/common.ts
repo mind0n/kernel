@@ -1,3 +1,21 @@
+
+export function starts(target:string, prefix:any){
+    if (target !== undefined && target !== null && prefix != undefined){
+        return false;
+    }
+    if (!(prefix instanceof Array)){
+        prefix = [prefix];
+    }
+    let rlt = false;
+    all(prefix, (item:any, i:any)=>{
+        if (target.indexOf(item) == 0){
+            rlt = true;
+            return true;
+        }
+    }); 
+    return  rlt;
+}
+
 export function extend(s:any, d:any, ig?:any){
     if (d){
         for(var i in d){
@@ -52,6 +70,7 @@ export function all(target:any, callback:Function, prepare?:Function){
     }
     return rlt;
 }
+
 export function uid(prefix?:string):string{
     if (!prefix){
         prefix = '$u$';
@@ -60,6 +79,7 @@ export function uid(prefix?:string):string{
     let s = `${prefix}-${d.getHours()}${d.getMinutes()}${d.getSeconds()}${d.getMilliseconds()}${Math.floor(Math.random() * 100)}-${d.getFullYear()}${d.getMonth()}${d.getDate()}`;
     return s;
 }
+
 export function clone(target:any, id?:string){
     let KEY = "$cloneid$";
     id = id || uid('$cl$');
@@ -70,7 +90,7 @@ export function clone(target:any, id?:string){
     if (target[KEY] && target[KEY] == id){
         return target;
     }
-    all(target, function(item, i){
+    all(target, function(item:any, i:any){
         rlt[i] = clone(item, id);
     }, function(array:boolean){
         if (array){
@@ -82,9 +102,10 @@ export function clone(target:any, id?:string){
     });
     return rlt;
 }
+
 export function join(target:any, field?:string){
     let rlt = '';
-    all(target, function(item, i){
+    all(target, function(item:any, i:any){
         rlt += field? item[field]:item;
     });
     return rlt;
@@ -98,13 +119,43 @@ export function clear(target:{pop:Function, length:number}){
     }
     return target;
 }
-export function add(target:{length:number}, item:any):any{
+
+export function unique(target:any, item:any, comp?:Function){
+    if (!comp){
+        comp = (a:any, b:any)=>{
+            return a == b;
+        };
+    }
+    let rlt = true;
+    all(target, (it:any, i:any)=>{
+        rlt = false;
+        return comp(it, item);
+    });
+    return rlt;
+}
+export function add(target:any, item:any, isunique?:any):any{
+    if (!isunique){
+        isunique = (a:any, b:any)=>{
+            return true;
+        }
+    }else if (isunique === true){
+        isunique = unique;
+    }
     if (!target){
         return [item];
     }
-    if (target.length === undefined){
+    if (target.length === undefined && isunique(target, item)){
         return [target, item];
     }
-    target[target.length] = item;
+    if (isunique(target, item)){
+        target[target.length] = item;
+    }
     return target;
+}
+
+export function addrange(target:any[], items:any[]){
+    for(let i=0; i<items.length; i++){
+        let item = items[i];
+        add(target, item);
+    }
 }
