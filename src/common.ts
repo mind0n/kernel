@@ -128,8 +128,10 @@ export function unique(target:any, item:any, comp?:Function){
     }
     let rlt = true;
     all(target, (it:any, i:any)=>{
-        rlt = false;
-        return comp(it, item);
+        if (comp(it, item)){
+            rlt = false;
+            return true;
+        }
     });
     return rlt;
 }
