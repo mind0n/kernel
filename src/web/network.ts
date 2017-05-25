@@ -76,13 +76,15 @@ function sendRequest(settings:any){
     }
     let fd:any = null;
     if (ispost){
-        if (!settings.upload){
-            fd = toformdata(settings.form);
-        }else{
+        if (settings.upload){
             fd = settings.form;
             if (fd.tagName){
                 fd = new FormData(fd);
             }
+        }else if (settings.raw){
+            fd = settings.raw;
+        }else{
+            fd = toformdata(settings.form);
         }
     }
     req.send(fd);
