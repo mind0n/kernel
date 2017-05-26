@@ -105,12 +105,12 @@ function handleResponse(text:string, settings:any, shandler:Function, ehandler:F
     }
     shandler(a);
 }
-export function send(url:string, settings?:any, method?:string):Promise<any>{
+export function send(url:string, settings?:any):Promise<any>{
     if (!settings){
         settings = {};
     }
     if (!settings.method){
-        settings.method = method || 'get';
+        settings.method = 'get';
     }
     settings.json = true;
     settings.url = url;
