@@ -94,7 +94,11 @@ function handleResponse(text:string, settings:any, shandler:Function, ehandler:F
     let a:any = text;
     if (settings.json){
         try{
-            a = { success:true, result:JSON.parse(text) };
+            if (text){
+                a = { success:true, result:JSON.parse(text) };
+            }else{
+                a = {success:false, result:'Empty server response'};
+            }
         }catch(e){
             ehandler({
                 success:false
