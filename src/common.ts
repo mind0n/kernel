@@ -51,7 +51,7 @@ export function all(target:any, callback:Function, prepare?:Function){
                 prepare(true);
             }
             for(let i=0;i<target.length;i++){
-                if (callback(target[i], i)){
+                if (callback(target[i], i, target)){
                     rlt = target[i];
                     break;
                 }
@@ -61,7 +61,7 @@ export function all(target:any, callback:Function, prepare?:Function){
                 prepare(false);
             }
             for(let i in target){
-                if (callback(target[i], i)){
+                if (callback(target[i], i,target)){
                     rlt = target[i];
                     break;
                 }
