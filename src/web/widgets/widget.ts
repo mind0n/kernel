@@ -1,23 +1,10 @@
 import {all, starts} from '../../common';
-
-function PrepareElement(json:any, parent?:WidgetElement):WidgetElement{
-    let rlt = <WidgetElement>this;
-    if (json instanceof Array){
-        json = {$:json};
-    }
-    let p = new ElementProcessor(rlt);
-    if (parent){
-        p.setparent(parent);
-    }
-    p.processAttrs();
-    all(json, (item:any, i:string, o:any)=>{
-        p.process(item, i);
-    });
-    return rlt;
-}
+import {PrepareElement} from './processor';
+import {Cursor} from "./cursor";
 
 export class Widget{
-    static ParseHtml(html:string):WidgetElement{
+    protected static widgets:any = {};
+    static parsehtml(html:string):WidgetElement{
         let rlt:any = null;
         let d = document.createElement('div');
         d.innerHTML = html;
@@ -29,83 +16,40 @@ export class Widget{
         rlt.prepare = PrepareElement;
         return rlt;
     }
-}
-
-export class ElementProcessor{
-    constructor(private target:WidgetElement, cs?:Cursor){
-        Cursor.check(target);
-        target.unit = function(){
-            return this.cs.unit;
-        };
-        target.root = function(){
-            return this.cs.root;
-        };
+    static regist(name:string, widget:WidgetBase){
+        Widget.widgets[name] = widget;
     }
-    processAttrs(){
-        let self = this.target;
-        let parent = self.cs.parent;
-        let attrs = self.attributes;
-        all(attrs, (at:Attr, i:number)=>{
-            if (at.name == 'alias'){
-                if (parent){
-                    let u = <any>parent.cs.childunit;
-                    u[`$${at.value}`] = self;
-                }else{
-                    // Root element with alias
-                }
-            }
-        });
-        return this;
+    static has(tag:string):boolean{
+        return Widget.widgets[tag.toLowerCase()];
     }
-    setparent(par:WidgetElement){
-        this.target.cs.parent = par;
-        if (!par.cs.root){
-            this.target.cs.root = par;
-        }else{
-            this.target.cs.root = par.cs.root;
-        }
-        this.target.cs.unit = par.cs.childunit;
-        return this;
-    }
-    process(item:any, i:string){
-        let target = <any>this.target;
-        if (i == '$'){
-
-        }else if (starts(i,'$')){
-            target[i] = item;
-        }else{
-            target.setAttribute(i, item);
-        }
-        return this;
+    static init(){
+        Widget.regist('test', new TestWidget());
     }
 }
 
-interface WidgetElement extends Element{
+export interface WidgetElement extends Element{
     cs:Cursor;
     prepare(json:any):WidgetElement;
     unit():WidgetElement;
     root():WidgetElement;
+    detach():WidgetElement;
 }
-class Cursor{
-    root:WidgetElement;
-    get childunit():WidgetElement{
-        let at = this.target.getAttribute('alias');
-        if (at){
-            return this.target;
-        }
-        return this.unit || this.target;
-    }
-    unit:WidgetElement;
-    parent:WidgetElement;
-    target:WidgetElement;
-    constructor(){
 
+export abstract class WidgetBase{
+    protected abstract render():string;
+    protected abstract inject():void;
+}
+
+class TestWidget extends WidgetBase{
+    render():string{
+        return `
+            <div class="w-test">
+                <span alias="head">Title</span>
+                <div alias="body">Body</div>
+            </div>
+        `;
     }
-    static check(target:WidgetElement){
-        if (!target.cs){
-            let cs = new Cursor();
-            cs.target = target;
-            target.cs = cs;
-        }
+    inject(){
+
     }
 }
