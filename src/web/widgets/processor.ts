@@ -1,25 +1,38 @@
 import {all, starts} from '../../common';
-import {WidgetElement} from "./widget";
+import {WidgetElement, Widget} from "./widget";
 import {Cursor} from "./cursor";
 
-export function PrepareElement(json:any, parent?:WidgetElement):WidgetElement{
+export function PrepareElement(json?:any, parent?:WidgetElement):WidgetElement{
     let rlt = <WidgetElement>this;
     if (json instanceof Array){
         json = {$:json};
     }
+    // WidgetElement functions
     let p = new ElementProcessor(rlt);
+    // Establish relationships
     if (parent){
         p.setparent(parent);
     }
+    // alias
     p.prepareAttrs();
-    all(json, (item:any, i:string, o:any)=>{
-        p.process(item, i);
-    });
+    p.setscope(json);
+    // all(json, (item:any, i:string, o:any)=>{
+    //     p.process(item, i);
+    // });
+    if (Widget.has(rlt.tagName)){
+        Widget.use(rlt);
+    }
+
     if (rlt.childNodes.length > 0){
-        let cjson = json.$ || {};
         all(rlt.childNodes, (it:Node, i:number)=>{
             if (it instanceof Element){
-                PrepareElement.call(it, cjson, rlt);
+                let el = <Element>it;
+                let cjson = json;
+                let cscope = el.getAttribute('scope');
+                if (cscope){
+                    cjson = json[cscope] || {};
+                }
+                PrepareElement.call(el, cjson, rlt);
             }
         });
     }
@@ -29,6 +42,7 @@ export function PrepareElement(json:any, parent?:WidgetElement):WidgetElement{
 export class ElementProcessor{
     constructor(private target:WidgetElement, cs?:Cursor){
         Cursor.check(target);
+        target.slots = {default:[]};
         target.unit = function(){
             return this.cs.unit;
         };
@@ -42,7 +56,19 @@ export class ElementProcessor{
             }
             b.$detach$.appendChild(this);
             return this;
-        }
+        };
+        target.trigger = function(name:string, arg?:any){
+            let scope = this.scope();
+            if (!scope.on){
+                scope.on = {};
+            }
+            scope = scope.on;
+            if (scope[name] && typeof(scope[name]) == 'function'){
+                let rlt = scope[name].call(this, arg);
+                return rlt === undefined?arg:rlt;
+            }
+            return arg;
+        };
     }
     prepareAttrs(){
         let self = this.target;
@@ -70,15 +96,24 @@ export class ElementProcessor{
         this.target.cs.unit = par.cs.childunit;
         return this;
     }
-    process(item:any, i:string){
-        let target = <any>this.target;
-        if (i == '$'){
-
-        }else if (starts(i,'$')){
-            target[i] = item;
-        }else{
-            target.setAttribute(i, item);
+    setscope(json:any){
+        let t = this.target;
+        t.scope = function(name?:string){
+            if (!name){            
+                return json;
+            }
+            return json[name];
         }
-        return this;
     }
+    // process(item:any, i:string){
+    //     let target = <any>this.target;
+    //     if (i == '$'){
+
+    //     }else if (starts(i,'$')){
+    //         target[i] = item;
+    //     }else{
+    //         target.setAttribute(i, item);
+    //     }
+    //     return this;
+    // }
 }
