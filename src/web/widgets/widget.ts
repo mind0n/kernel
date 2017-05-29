@@ -61,7 +61,7 @@ export interface WidgetElement extends Element{
     unit():WidgetElement;
     root():WidgetElement;
     detach():WidgetElement;
-    scope():any;
+    scope(name?:string):any;
     trigger(name:string, arg?:any):any;
 }
 
@@ -81,7 +81,7 @@ class TestWidget extends WidgetFactory{
         return `
             <div class="w-test">
                 <span alias="head">Title</span>
-                <div alias="body">Body</div>
+                <div scope="child" alias="body" ifclick="click">Body</div>
             </div>
         `;
     }

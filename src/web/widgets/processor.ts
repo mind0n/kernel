@@ -14,8 +14,8 @@ export function PrepareElement(json?:any, parent?:WidgetElement):WidgetElement{
         p.setparent(parent);
     }
     // alias
-    p.prepareAttrs();
     p.setscope(json);
+    p.prepareAttrs();
     // all(json, (item:any, i:string, o:any)=>{
     //     p.process(item, i);
     // });
@@ -71,16 +71,23 @@ export class ElementProcessor{
         };
     }
     prepareAttrs(){
-        let self = this.target;
+        let self = <any>this.target;
         let parent = self.cs.parent;
         let attrs = self.attributes;
         all(attrs, (at:Attr, i:number)=>{
+            console.log(at.name);
             if (at.name == 'alias'){
                 if (parent){
                     let u = <any>parent.cs.childunit;
                     u[`$${at.value}`] = self;
                 }else{
                     // Root element with alias
+                }
+            }else if (starts(at.name, 'if')){
+                let fname = at.name.substr(2);
+                let scope = self.scope('on');
+                if (scope && scope[fname]){
+                    self[`on${fname}`] = scope[fname];
                 }
             }
         });

@@ -1,6 +1,6 @@
 
 export function starts(target:string, prefix:any){
-    if (target !== undefined && target !== null && prefix != undefined){
+    if (target === undefined || target === null || prefix === undefined){
         return false;
     }
     if (!(prefix instanceof Array)){
