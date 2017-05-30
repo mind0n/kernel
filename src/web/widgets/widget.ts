@@ -81,7 +81,7 @@ class TestWidget extends WidgetFactory{
         return `
             <div class="w-test">
                 <span alias="head">Title</span>
-                <div scope="child" alias="body" ifclick="click">Body</div>
+                <div scope="child" ifclick="click">Body</div>
             </div>
         `;
     }

@@ -13,8 +13,10 @@ export function PrepareElement(json?:any, parent?:WidgetElement):WidgetElement{
     if (parent){
         p.setparent(parent);
     }
-    // alias
-    p.setscope(json);
+    // Child scope
+    let sc = rlt.getAttribute('scope');
+    p.setscope(json, sc);
+
     p.prepareAttrs();
     // all(json, (item:any, i:string, o:any)=>{
     //     p.process(item, i);
@@ -28,10 +30,10 @@ export function PrepareElement(json?:any, parent?:WidgetElement):WidgetElement{
             if (it instanceof Element){
                 let el = <Element>it;
                 let cjson = json;
-                let cscope = el.getAttribute('scope');
-                if (cscope){
-                    cjson = json[cscope] || {};
-                }
+                // let cscope = el.getAttribute('scope');
+                // if (cscope){
+                //     cjson = json[cscope] || {};
+                // }
                 PrepareElement.call(el, cjson, rlt);
             }
         });
@@ -77,12 +79,7 @@ export class ElementProcessor{
         all(attrs, (at:Attr, i:number)=>{
             console.log(at.name);
             if (at.name == 'alias'){
-                if (parent){
-                    let u = <any>parent.cs.childunit;
-                    u[`$${at.value}`] = self;
-                }else{
-                    // Root element with alias
-                }
+                this.setalias(at.value);
             }else if (starts(at.name, 'if')){
                 let fname = at.name.substr(2);
                 let scope = self.scope('on');
@@ -91,6 +88,17 @@ export class ElementProcessor{
                 }
             }
         });
+        return this;
+    }
+    setalias(alias:string){
+        let self = <any>this.target;
+        let parent = self.cs.parent;
+        if (parent){
+            let u = <any>parent.cs.childunit;
+            u[`$${alias}`] = self;
+        }else{
+            // Root element with alias
+        }
         return this;
     }
     setparent(par:WidgetElement){
@@ -103,8 +111,12 @@ export class ElementProcessor{
         this.target.cs.unit = par.cs.childunit;
         return this;
     }
-    setscope(json:any){
+    setscope(json:any, child?:string){
         let t = this.target;
+        if (child){
+            json = json[child] || {};
+            this.setalias(child);
+        }
         t.scope = function(name?:string){
             if (!name){            
                 return json;
