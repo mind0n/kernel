@@ -1,5 +1,6 @@
-import {all, starts} from '../../common';
-import {WidgetElement, Widget} from "./widget";
+import {all, starts, add} from '../../common';
+import {WidgetElement, Widget, WidgetScope} from "./widget";
+import {Action} from './action';
 import {Cursor} from "./cursor";
 
 export function PrepareElement(json?:any, parent?:WidgetElement):WidgetElement{
@@ -17,11 +18,11 @@ export function PrepareElement(json?:any, parent?:WidgetElement):WidgetElement{
     let sc = rlt.getAttribute('scope');
     p.setscope(json, sc);
 
+    Action.check(rlt);
     p.prepareAttrs();
-    // all(json, (item:any, i:string, o:any)=>{
-    //     p.process(item, i);
-    // });
+
     if (Widget.has(rlt.tagName)){
+        // Initialize widget
         Widget.use(rlt);
     }
 
@@ -30,14 +31,11 @@ export function PrepareElement(json?:any, parent?:WidgetElement):WidgetElement{
             if (it instanceof Element){
                 let el = <Element>it;
                 let cjson = json;
-                // let cscope = el.getAttribute('scope');
-                // if (cscope){
-                //     cjson = json[cscope] || {};
-                // }
                 PrepareElement.call(el, cjson, rlt);
             }
         });
     }
+    rlt.refresh();
     return rlt;
 }
 
@@ -71,13 +69,32 @@ export class ElementProcessor{
             }
             return arg;
         };
+        target.refresh = function(recursive?:boolean){
+            let s = <WidgetScope>this.scope();
+            let a = s.$actions;
+            a.run();
+            if (recursive){
+                all(this.childNodes, (node:any, i:number)=>{
+                    if (node instanceof Element){
+                        let n = <WidgetElement>node;
+                        n.refresh(recursive);
+                    }
+                })
+            }            
+        };
+        target.act = function(script:string, handler:Function, long?:boolean){
+            let self = <WidgetElement>this;
+            let scope = self.scope();
+            let act = scope.$actions;
+            act.register(script, handler, long);
+            //f.call(scope, self, self.unit, self.scope, console);
+        }
     }
     prepareAttrs(){
         let self = <any>this.target;
         let parent = self.cs.parent;
         let attrs = self.attributes;
         all(attrs, (at:Attr, i:number)=>{
-            console.log(at.name);
             if (at.name == 'alias'){
                 this.setalias(at.value);
             }else if (starts(at.name, 'if')){
@@ -86,6 +103,10 @@ export class ElementProcessor{
                 if (scope && scope[fname]){
                     self[`on${fname}`] = scope[fname];
                 }
+            }else if (starts(at.name, ':')){
+                self.act(at.value, function(v:any, arg:any){
+                    this.setAttribute(arg, v);
+                });
             }
         });
         return this;
@@ -124,15 +145,5 @@ export class ElementProcessor{
             return json[name];
         }
     }
-    // process(item:any, i:string){
-    //     let target = <any>this.target;
-    //     if (i == '$'){
 
-    //     }else if (starts(i,'$')){
-    //         target[i] = item;
-    //     }else{
-    //         target.setAttribute(i, item);
-    //     }
-    //     return this;
-    // }
 }
