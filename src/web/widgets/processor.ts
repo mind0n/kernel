@@ -1,5 +1,5 @@
 import {all, starts, add} from '../../common';
-import {WidgetElement, Widget, WidgetScope} from "./widget";
+import {WidgetElement, Widget, WidgetScope, WidgetFactory} from "./widget";
 import {Action} from './action';
 import {Cursor} from "./cursor";
 
@@ -20,10 +20,10 @@ export function PrepareElement(json?:any, parent?:WidgetElement):WidgetElement{
 
     Action.check(rlt);
     p.prepareAttrs();
-
+    let factory:WidgetFactory = null;
     if (Widget.has(rlt.tagName)){
         // Initialize widget
-        Widget.use(rlt);
+        factory = Widget.use(rlt);
     }
 
     if (rlt.childNodes.length > 0){
@@ -34,6 +34,12 @@ export function PrepareElement(json?:any, parent?:WidgetElement):WidgetElement{
                 PrepareElement.call(el, cjson, rlt);
             }
         });
+    }
+
+    if (factory){
+        rlt.trigger('link');
+        factory.link(rlt);
+        rlt.trigger('linked');
     }
     rlt.refresh();
     return rlt;
@@ -95,9 +101,6 @@ export class ElementProcessor{
             html = self.trigger('render', html);
             self.innerHTML = html;
             self.trigger('rendered', html);
-            self.trigger('link');
-            f.link(self);
-            self.trigger('linked');
         };
     }
     prepareAttrs(){

@@ -24,9 +24,14 @@ export class Widget{
     static has(tag:string):boolean{
         return Widget.widgets[tag.toLowerCase()];
     }
-    static use(el:WidgetElement):boolean{
+    static use(el:WidgetElement):WidgetFactory{
         let tag = el.tagName.toLowerCase();
-        if (Widget.widgets[tag]){
+        let factory = Widget.widgets[tag];
+            // self.trigger('link');
+            // f.link(self);
+            // self.trigger('linked');
+
+        if (factory){
             // Slot assignment
             all(el.childNodes, (child:Node, i:number)=>{
                 let attrs = <any>child.attributes;
@@ -38,14 +43,14 @@ export class Widget{
                     add(el.slots[n], child);
                 }
             });
-            el.scope().$factory = Widget.widgets[tag];
+            el.scope().$factory = factory;
             el.render();
-            return true;
+            return factory;
         }
-        return false;
+        return null;
     }
     static init(){
-        Widget.regist('tst', new TestWidget());
+        Widget.regist('tst', new UploadWidget());
         Widget.regist('icon', new IconWidget());
     }
 }
@@ -124,17 +129,42 @@ class IconWidget extends WidgetFactory{
         };
     }
 }
-class TestWidget extends WidgetFactory{
+class UploadWidget extends WidgetFactory{
     renderWidget():string{
         return `
             <div class="w-upload-item">
-                <icon :n="ui,test~'placeholder'"></icon>
+                <icon :n="ui,test~'placeholder'" :onclick="console.log(self.unit().$progress)"></icon>
+                <span alias="progress" html="self.progress"></span>
             </div>
         `;
     }
     linkWidget(target:any){
-        target.test = ()=>{
-            console.log('success');
+        target.$uploadItem$ = {};
+        target.$progress.progress=function(p?:number){
+            console.log(this);
+            if (p === undefined){
+                return this.progress;
+            }
+            this.progress = p;
         };
+        target.load = function(file:File){
+            this.$uploadItem.file = file;
+        };
+        target.paste = function(item:any){
+            let f = item.getAsFile();
+            this.load(f);
+        };
+        target.preview = function(callback:Function){
+            let ui = this.$uploadItem$;
+            let r = new FileReader();
+            r.onload = (e:any)=>{
+                ui.url = e.target.result;
+                if (callback){
+                    callback(e);
+                }
+            }
+            r.readAsDataURL(ui.file);
+        };
+
     }
 }
