@@ -38,16 +38,8 @@ export class Widget{
                     add(el.slots[n], child);
                 }
             });
-            let w = <WidgetFactory>Widget.widgets[tag];
-            let s = <WidgetScope>el.scope();
-            s.$factory = w;
-            let html = w.render(el);
-            html = el.trigger('render', html);
-            el.innerHTML = html;
-            html = el.trigger('rendered', html);
-            el.trigger('link');
-            w.link(el);
-            el.trigger('linked');
+            el.scope().$factory = Widget.widgets[tag];
+            el.render();
             return true;
         }
         return false;
@@ -61,6 +53,7 @@ export class Widget{
 export interface WidgetElement extends Element{
     cs:Cursor;
     slots:any;
+    actions:Action;
     prepare(json:any):WidgetElement;
     unit():WidgetElement;
     root():WidgetElement;
@@ -68,12 +61,13 @@ export interface WidgetElement extends Element{
     scope(name?:string):WidgetScope;
     trigger(name:string, arg?:any):any;
     refresh(recursive?:boolean):void;
+    render():void;
     act(script:string, handler:Function, long?:boolean):void;
 }
 
 export interface WidgetScope{
     $factory:WidgetFactory;
-    $actions:Action;
+    $filters:any;
 }
 
 export abstract class WidgetFactory{
@@ -110,7 +104,7 @@ class IconWidget extends WidgetFactory{
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" >
                     <path d="M8 13L16 22L24 13L16 22" />
                 </svg>`;
-            case 'place-holder':
+            case 'placeholder':
                 return `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" >
                     <path class="fill" d="M 166.968 184.31 L 303.071 358.517 L 30.864 358.517 L 166.968 184.31 Z" />
@@ -134,7 +128,7 @@ class TestWidget extends WidgetFactory{
     renderWidget():string{
         return `
             <div class="w-upload-item">
-                <icon :n="console.log('placeholder')"></icon>
+                <icon :n="ui,test~'placeholder'"></icon>
             </div>
         `;
     }

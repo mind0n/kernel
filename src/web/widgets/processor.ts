@@ -70,8 +70,7 @@ export class ElementProcessor{
             return arg;
         };
         target.refresh = function(recursive?:boolean){
-            let s = <WidgetScope>this.scope();
-            let a = s.$actions;
+            let a = (<WidgetElement>this).actions;
             a.run();
             if (recursive){
                 all(this.childNodes, (node:any, i:number)=>{
@@ -84,11 +83,22 @@ export class ElementProcessor{
         };
         target.act = function(script:string, handler:Function, long?:boolean){
             let self = <WidgetElement>this;
-            let scope = self.scope();
-            let act = scope.$actions;
+            let act = self.actions;
             act.register(script, handler, long);
             //f.call(scope, self, self.unit, self.scope, console);
-        }
+        };
+        target.render = function(){
+            let self = this;
+            let s = <WidgetScope>self.scope();
+            let f = s.$factory;
+            let html = f.render(self);
+            html = self.trigger('render', html);
+            self.innerHTML = html;
+            self.trigger('rendered', html);
+            self.trigger('link');
+            f.link(self);
+            self.trigger('linked');
+        };
     }
     prepareAttrs(){
         let self = <any>this.target;
@@ -138,11 +148,15 @@ export class ElementProcessor{
             json = json[child] || {};
             this.setalias(child);
         }
-        t.scope = function(name?:string){
-            if (!name){            
-                return json;
+        t.scope = function(name?:string):WidgetScope{
+            let rlt = <WidgetScope>json;
+            if (name){            
+                rlt = json[name];
             }
-            return json[name];
+            if (!rlt.$filters){
+                rlt.$filters = {};
+            }
+            return rlt;
         }
     }
 
