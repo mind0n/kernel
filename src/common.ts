@@ -16,6 +16,19 @@ export function starts(target:string, prefix:any){
     return  rlt;
 }
 
+export function between(target:string, start:string, end:string){
+    return target && target.indexOf(start) == 0 && target.lastIndexOf(end) == target.length-end.length;
+}
+
+export function inbetween(target:string, start?:string, end?:string){
+    let sl = start?start.length:1;
+    let el = end?end.length:1;
+    if (target){
+        return target.substr(sl, target.length - sl - el);
+    }
+    return target;
+}
+
 export function extend(s:any, d:any, ig?:any){
     if (d){
         for(var i in d){

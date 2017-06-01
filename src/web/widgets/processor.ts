@@ -1,4 +1,4 @@
-import {all, starts, add} from '../../common';
+import {all, between, inbetween, starts, add} from '../../common';
 import {WidgetElement, Widget, WidgetScope, WidgetFactory} from "./widget";
 import {Action} from './action';
 import {Cursor} from "./cursor";
@@ -24,16 +24,8 @@ export function PrepareElement(json?:any, parent?:WidgetElement):WidgetElement{
     if (Widget.has(rlt.tagName)){
         // Initialize widget
         factory = Widget.use(rlt);
-    }
-
-    if (rlt.childNodes.length > 0){
-        all(rlt.childNodes, (it:Node, i:number)=>{
-            if (it instanceof Element){
-                let el = <Element>it;
-                let cjson = json;
-                PrepareElement.call(el, cjson, rlt);
-            }
-        });
+    }else{
+        rlt.prepareChildren(json);
     }
 
     if (factory){
@@ -49,7 +41,7 @@ export class ElementProcessor{
     constructor(private target:WidgetElement, cs?:Cursor){
         Cursor.check(target);
         target.slots = {default:[]};
-        target.unit = function(){
+        target.unit = function(name?:string){
             return this.cs.unit;
         };
         target.root = function(){
@@ -75,6 +67,18 @@ export class ElementProcessor{
             }
             return arg;
         };
+        target.prepareChildren = function(json:any){
+            let rlt = this;
+            if (rlt.childNodes.length > 0){
+                all(rlt.childNodes, (it:Node, i:number)=>{
+                    if (it instanceof Element){
+                        let el = <Element>it;
+                        let cjson = json;
+                        PrepareElement.call(el, cjson, rlt);
+                    }
+                });
+            }
+        };
         target.refresh = function(recursive?:boolean){
             let a = (<WidgetElement>this).actions;
             a.run();
@@ -87,10 +91,10 @@ export class ElementProcessor{
                 })
             }            
         };
-        target.act = function(script:string, handler:Function, long?:boolean){
+        target.act = function(script:string, handler:Function, arg:any, long?:boolean){
             let self = <WidgetElement>this;
             let act = self.actions;
-            act.register(script, handler, long);
+            act.register(script, handler, arg, long);
             //f.call(scope, self, self.unit, self.scope, console);
         };
         target.render = function(){
@@ -101,6 +105,7 @@ export class ElementProcessor{
             html = self.trigger('render', html);
             self.innerHTML = html;
             self.trigger('rendered', html);
+            self.prepareChildren(s);
         };
     }
     prepareAttrs(){
@@ -110,16 +115,36 @@ export class ElementProcessor{
         all(attrs, (at:Attr, i:number)=>{
             if (at.name == 'alias'){
                 this.setalias(at.value);
+            }else if (starts(at.name, 'html')){
+                self.act(at.value, function(v:any, arg:any){
+                    console.log(v);
+                    this.innerHTML = v === undefined?'':v;
+                }, undefined);
             }else if (starts(at.name, 'if')){
                 let fname = at.name.substr(2);
                 let scope = self.scope('on');
                 if (scope && scope[fname]){
-                    self[`on${fname}`] = scope[fname];
+                    self.addEventListener(fname, scope[fname]);
+                }else{
+                    let script = at.value;
+                    let fun = Action.parse(script, null, true);
+                    self[`on${fname}`] = function(event:Event){
+                        fun.call(scope, self, self.unit, event);
+                    };
                 }
             }else if (starts(at.name, ':')){
                 self.act(at.value, function(v:any, arg:any){
-                    this.setAttribute(arg, v);
-                });
+                    this[arg] = v;
+                }, at.name.substr(1));
+            }else if (between(at.value, '{', '}')){
+                let script = inbetween(at.value);
+                self.act(script, function(v:any, arg:any){
+                    if (v){
+                        this.setAttribute(arg, v);
+                    }else{
+                        this.removeAttribute(arg);
+                    }
+                }, at.name);
             }
         });
         return this;

@@ -35,7 +35,7 @@ export class Widget{
             // Slot assignment
             all(el.childNodes, (child:Node, i:number)=>{
                 let attrs = <any>child.attributes;
-                if (attrs['slot']){
+                if (attrs && attrs['slot']){
                     let n = attrs['slot'];
                     if (!el.slots[n]){
                         el.slots[n] = [];
@@ -60,13 +60,14 @@ export interface WidgetElement extends Element{
     slots:any;
     actions:Action;
     prepare(json:any):WidgetElement;
-    unit():WidgetElement;
+    unit(name?:string):WidgetElement;
     root():WidgetElement;
     detach():WidgetElement;
     scope(name?:string):WidgetScope;
     trigger(name:string, arg?:any):any;
     refresh(recursive?:boolean):void;
     render():void;
+    prepareChildren(json:any):void;
     act(script:string, handler:Function, long?:boolean):void;
 }
 
@@ -87,7 +88,7 @@ export abstract class WidgetFactory{
 }
 class IconWidget extends WidgetFactory{
     renderWidget(el:WidgetElement):string{
-        let name = el.getAttribute('n') || 'placeholder';
+        let name = (<any>el)['n'] || 'placeholder';
         switch(name){
             case 'toggle-menu':
                 return `
@@ -133,8 +134,11 @@ class UploadWidget extends WidgetFactory{
     renderWidget():string{
         return `
             <div class="w-upload-item">
-                <icon :n="ui,test~'placeholder'" :onclick="console.log(self.unit().$progress)"></icon>
+                <icon :n="$ui,test~'placeholder'" 
+                    ifclick="$ui~unit().$progress.progress='0%';unit().$test.cc=!unit().$test.cc;console.log(unit().$progress.progress);unit().refresh(true);self.n='//www.baidu.com/img/childrens-day-start_e9fdc805825f196d9b367eec86e65d62.png';"
+                ></icon><br />
                 <span alias="progress" html="self.progress"></span>
+                <input alias="test" checked="{self.cc}" type="checkbox" />
             </div>
         `;
     }
