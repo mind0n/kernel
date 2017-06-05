@@ -103,7 +103,9 @@ export class ElementProcessor{
             let f = s.$factory;
             let html = f.render(self);
             html = self.trigger('render', html);
-            self.innerHTML = html;
+            if (html !== undefined){
+                self.innerHTML = html;
+            }
             self.trigger('rendered', html);
             self.prepareChildren(s);
         };
