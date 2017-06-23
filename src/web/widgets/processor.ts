@@ -67,6 +67,13 @@ export class ElementProcessor{
             }
             return arg;
         };
+        target.appendto = function(el:WidgetElement){
+            let self = <WidgetElement>this;
+            if (el){
+                el.appendChild(self);
+                el.trigger('mounted', self);
+            }
+        }
         target.prepareChildren = function(json:any){
             let rlt = this;
             if (rlt.childNodes.length > 0){
@@ -80,6 +87,10 @@ export class ElementProcessor{
             }
         };
         target.refresh = function(recursive?:boolean){
+            let t = <any>this;
+            if (t.onrefresh){
+                t.onrefresh(t.scope());
+            }
             let a = (<WidgetElement>this).actions;
             a.run();
             if (recursive){

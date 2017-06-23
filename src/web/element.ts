@@ -1,4 +1,4 @@
-import {starts, all} from "../common";
+import {starts, all, add} from "../common";
 
 let w = <any>window;
 let b = <any>document.body;
@@ -31,4 +31,19 @@ export function destroy(target:Node){
     let d = <Element> b.$destroyer$;
     d.appendChild(target);
     d.innerHTML = '';
+}
+export function create(html:string, multiple?:boolean):Node{
+    let b = <any>document.body;
+    if (!b.$creator$){
+        b.$creator$ = document.createElement('div');
+    }
+    let div = b.$creator$;
+    div.innerHTML = html;
+    let rlt:any[] = [];
+    all(div.childNodes, (n:Node, i:number)=>{
+        add(rlt, n);
+    });
+    div.innerHTML = '';
+
+    return multiple?rlt:rlt[0];
 }

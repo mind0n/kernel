@@ -21,8 +21,15 @@ export class Widget{
     static regist(name:string, widget:WidgetFactory){
         Widget.widgets[name] = widget;
     }
-    static has(tag:string):boolean{
-        return Widget.widgets[tag.toLowerCase()];
+    static has(tag:any):boolean{
+        let tagname:string;
+        let t = typeof(tag);
+        if (t == 'string'){
+            tagname = tag.toLowerCase();
+        }else{
+            tagname = tag.tagName.toLowerCase();
+        }
+        return Widget.widgets[tagname];
     }
     static use(el:WidgetElement):WidgetFactory{
         let tag = el.tagName.toLowerCase();
@@ -64,7 +71,7 @@ export interface WidgetElement extends Element{
     slots:any;
     actions:Action;
     template:string;
-    prepare(json:any):WidgetElement;
+    prepare(json:any, parent?:WidgetElement):WidgetElement;
     unit(name?:string):WidgetElement;
     root():WidgetElement;
     detach():WidgetElement;
@@ -73,7 +80,12 @@ export interface WidgetElement extends Element{
     refresh(recursive?:boolean):void;
     render():void;
     prepareChildren(json:any):void;
+    appendto(target:WidgetElement):void;
     act(script:string, handler:Function, long?:boolean):void;
+}
+
+export interface ForWidgetElement extends WidgetElement{
+    els:Node[];
 }
 
 export interface WidgetScope{
