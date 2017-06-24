@@ -33,12 +33,15 @@ export function PrepareElement(json?:any, parent?:WidgetElement):WidgetElement{
         factory.link(rlt);
         rlt.trigger('linked');
     }
-    rlt.refresh();
+    p.refresh();
     return rlt;
 }
 
 export class ElementProcessor{
     constructor(private target:WidgetElement, cs?:Cursor){
+        if (target.isready && target.isready()){
+            return;
+        }
         Cursor.check(target);
         target.slots = {default:[]};
         target.unit = function(name?:string){
@@ -71,20 +74,27 @@ export class ElementProcessor{
             let self = <WidgetElement>this;
             if (el){
                 el.appendChild(self);
-                el.trigger('mounted', self);
+                self.trigger('mounted', self);
             }
         }
         target.prepareChildren = function(json:any){
             let rlt = this;
-            if (rlt.childNodes.length > 0){
-                all(rlt.childNodes, (it:Node, i:number)=>{
-                    if (it instanceof Element){
-                        let el = <Element>it;
-                        let cjson = json;
-                        PrepareElement.call(el, cjson, rlt);
-                    }
-                });
+            if (rlt.onpreparechildren){
+                rlt.onpreparechildren(json);
+            }else{
+                if (rlt.childNodes.length > 0){
+                    all(rlt.childNodes, (it:Node, i:number)=>{
+                        if (it instanceof Element){
+                            let el = <Element>it;
+                            let cjson = json;
+                            PrepareElement.call(el, cjson, rlt);
+                        }
+                    });
+                }
             }
+        };
+        target.isready = function(){
+            return this.state == 2;
         };
         target.refresh = function(recursive?:boolean){
             let t = <any>this;
@@ -120,6 +130,7 @@ export class ElementProcessor{
             self.trigger('rendered', html);
             self.prepareChildren(s);
         };
+        target.state = 1;
     }
     prepareAttrs(){
         let self = <any>this.target;
@@ -130,7 +141,7 @@ export class ElementProcessor{
                 this.setalias(at.value);
             }else if (starts(at.name, 'html')){
                 self.act(at.value, function(v:any, arg:any){
-                    console.log(v);
+                    //console.log(v);
                     this.innerHTML = v === undefined?'':v;
                 }, undefined);
             }else if (starts(at.name, 'if')){
@@ -184,12 +195,14 @@ export class ElementProcessor{
         return this;
     }
     setscope(json:any, child?:string){
-        let t = this.target;
+        let t = <any>this.target;
         if (child){
             json = json[child] || {};
             this.setalias(child);
         }
+        t.$scope = json;
         t.scope = function(name?:string):WidgetScope{
+            let json = this.$scope;
             let rlt = <WidgetScope>json;
             if (name){            
                 rlt = json[name];
@@ -199,6 +212,12 @@ export class ElementProcessor{
             }
             return rlt;
         }
+        t.setscope = function(scope:any){
+            this.$scope = scope;
+        }
     }
-
+    refresh(){
+        this.target.state = 2;
+        this.target.refresh();
+    }
 }

@@ -1,7 +1,5 @@
 import {starts, all, add} from "../common";
 
-let w = <any>window;
-let b = <any>document.body;
 export function addcss(target:any, name:string){
     let classes = target.className.trim();
     if (classes.indexOf(name) != 0 && classes.indexOf(' ' + name)<0){
@@ -17,6 +15,7 @@ export function delcss(target:any, name:string){
     }
 }
 export function destroy(target:Node){
+    let b = <any>document.body;
     if (!b.$destroyer$){
         b.$destroyer$ = document.createElement('div');
     }

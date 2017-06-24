@@ -92,10 +92,11 @@ export class Action{
     }
     run(){
         all(this.actions, (action:ActionItem, i:number)=>{
-            action.func.call(action.scope, action.target, action.unit, action.arg);
+            action.func.call(action.scope.call(action.target), action.target, action.unit, action.arg);
         });
     }
     register(script:string, handler:Function, arg?:any, long?:boolean){
+        //console.log(script, this.target, this.target.scope());
         let f = Action.parse(script, handler, long);
         let target = this.target;
         
@@ -103,7 +104,7 @@ export class Action{
             func:f
             , arg:arg
             , target:target
-            , scope:target.scope()
+            , scope:target.scope
             , unit:(name?:string)=>target.unit(name)
         });
     }
@@ -114,6 +115,6 @@ class ActionItem{
     filter:string;
     handler:Function;
     target:WidgetElement;
-    scope:WidgetScope;
+    scope:Function;
     unit:Function;
 }

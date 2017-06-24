@@ -31,13 +31,18 @@ export class Widget{
         }
         return Widget.widgets[tagname];
     }
+    static prepare(el:WidgetElement, scope:any, parent?:WidgetElement){
+        if (!el){
+            return;
+        }
+        if (!el.prepare){
+            el.prepare = PrepareElement;
+        }
+        el.prepare(scope, parent);
+    }
     static use(el:WidgetElement):WidgetFactory{
         let tag = el.tagName.toLowerCase();
         let factory = Widget.widgets[tag];
-            // self.trigger('link');
-            // f.link(self);
-            // self.trigger('linked');
-
         if (factory){
             // Slot assignment
             all(el.childNodes, (child:Node, i:number)=>{
@@ -51,13 +56,15 @@ export class Widget{
                 }
             });
             el.scope().$factory = factory;
-            //factory.init(el);
+            factory.init(el);
             el.render();
             return factory;
         }
         return null;
     }
     static init(options:any){
+        let w = <any>window;
+        w.w = Widget;
         all(options, (item:any, i:string)=>{
             Widget.regist(i, item);
         });
@@ -71,11 +78,15 @@ export interface WidgetElement extends Element{
     slots:any;
     actions:Action;
     template:string;
+    state:number;
+    isready:Function;
+    onpreparechildren(json:any):void;
     prepare(json:any, parent?:WidgetElement):WidgetElement;
     unit(name?:string):WidgetElement;
     root():WidgetElement;
     detach():WidgetElement;
     scope(name?:string):WidgetScope;
+    setscope(scope:any):void;
     trigger(name:string, arg?:any):any;
     refresh(recursive?:boolean):void;
     render():void;
@@ -86,6 +97,7 @@ export interface WidgetElement extends Element{
 
 export interface ForWidgetElement extends WidgetElement{
     els:Node[];
+    getlist(scope:any):any;
 }
 
 export interface WidgetScope{
