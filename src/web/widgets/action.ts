@@ -8,18 +8,22 @@ function d(v:any){
 }
 export class Action{
     protected actions:any[] = [];
+    protected onetimes:any[] = [];
     protected static filters:any = {
             $ui:function(v:any){
                 this.render();
             }
-            ,d:d
-            ,$d:d
-            ,_d:d
+            ,$once:function(v:any, arg:any){
+                console.log(this);
+            }
+            ,d:d    // normal breakpoint
+            ,$d:d   // post breakpoint
+            ,_d:d   // early breakpoint
         };
     static check(target:WidgetElement){
         return new Action(target);
     }
-    static parse(script:string, handler?:Function, long?:boolean){
+    static parse(script:string, handler?:Function, long?:boolean):any{
         let filter:string = undefined;
         let n = script.indexOf('~');
         if (n > 0){
@@ -83,7 +87,13 @@ export class Action{
             runpostfilter(this, self, r, arg);
             return r;
         }
-        return rlt;
+        if (filter && filter.indexOf('$once') == 0){
+            return {
+                action:rlt
+                ,once:true
+            }
+        }
+        return {action:rlt};
     }
     constructor(private target:WidgetElement){
         if (!target.actions){
@@ -91,22 +101,36 @@ export class Action{
         }
     }
     run(){
+        all(this.onetimes, (action:ActionItem, i:number)=>{
+            action.func.call(action.scope.call(action.target), action.target, action.unit, action.arg);
+        });
+        this.onetimes = [];
         all(this.actions, (action:ActionItem, i:number)=>{
             action.func.call(action.scope.call(action.target), action.target, action.unit, action.arg);
         });
     }
     register(script:string, handler:Function, arg?:any, long?:boolean){
         //console.log(script, this.target, this.target.scope());
-        let f = Action.parse(script, handler, long);
+        let r = Action.parse(script, handler, long);
+        let f = r.action;
         let target = this.target;
-        
-        add(this.actions, {
-            func:f
-            , arg:arg
-            , target:target
-            , scope:target.scope
-            , unit:(name?:string)=>target.unit(name)
-        });
+        if (r.once){
+            add(this.onetimes, {
+                func:f
+                , arg:arg
+                , target:target
+                , scope:target.scope
+                , unit:(name?:string)=>target.unit(name)
+            });
+        }else{
+            add(this.actions, {
+                func:f
+                , arg:arg
+                , target:target
+                , scope:target.scope
+                , unit:(name?:string)=>target.unit(name)
+            });
+        }
     }
 }
 class ActionItem{

@@ -29,6 +29,7 @@ export class ForWidget extends WidgetFactory{
         return;
     }
     protected renderItem(node:ForWidgetElement, item:any){
+        //console.log(node.template);
         let el = Widget.parsehtml(node.template);
         add(node.els, el);
         el.prepare(item, node);
