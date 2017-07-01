@@ -31,6 +31,13 @@ export function destroy(target:Node){
     d.appendChild(target);
     d.innerHTML = '';
 }
+export function evtarget(event:Event, callback?:Function){
+    let el = event.target || event.srcElement;
+    if (callback){
+        return callback(el);
+    }
+    return el;
+}
 export function create(html:string, multiple?:boolean):Node{
     let b = <any>document.body;
     if (!b.$creator$){
