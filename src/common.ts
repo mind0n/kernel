@@ -174,3 +174,16 @@ export function addrange(target:any[], items:any[]){
         add(target, item);
     }
 }
+
+export function diff(a:Date, b:Date, mode?:number){
+    let modes = [1, 1000, 60, 60, 24]; // ms, second, minute, hour, day
+    if (!mode){
+        mode = 0;
+    }
+    let d:any = (<any>a) - (<any>b);
+    let m = 1;
+    for(let i=0; i<mode;i++){
+        m*=modes[i];
+    }
+    return Math.floor(d/m);
+}
