@@ -187,3 +187,16 @@ export function diff(a:Date, b:Date, mode?:number){
     }
     return Math.floor(d/m);
 }
+
+export class Factory<T>{
+    protected list:T[] = [];
+    regist(item:T){
+        add(this.list, item);
+    }
+}
+export class NamedFactory<T>{
+    protected cache:any = {};
+    regist(name:string, item:T){
+        this.cache[name] = item;
+    }
+}
