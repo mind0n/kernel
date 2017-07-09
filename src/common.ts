@@ -50,7 +50,7 @@ export function find(target:any[], field:string, val:any){
     });
 }
 
-export function all(target:any, callback:Function, prepare?:Function){
+export function all(target:any, callback:Function, prepare?:Function, last?:boolean){
     let rlt:any = null;
     if (callback){
         if (target === undefined || target === null){
@@ -69,6 +69,9 @@ export function all(target:any, callback:Function, prepare?:Function){
                     break;
                 }
             }
+            if (last){
+                rlt = target[target.length - 1];
+            }
         }else{
             if (prepare){
                 prepare(false);
@@ -77,6 +80,8 @@ export function all(target:any, callback:Function, prepare?:Function){
                 if (callback(target[i], i,target)){
                     rlt = target[i];
                     break;
+                }else if (last){
+                    rlt = target[i];
                 }
             }
         }
@@ -198,5 +203,8 @@ export class NamedFactory<T>{
     protected cache:any = {};
     regist(name:string, item:T){
         this.cache[name] = item;
+    }
+    get(name:string){
+        return this.cache[name];
     }
 }
