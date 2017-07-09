@@ -69,7 +69,7 @@ export function all(target:any, callback:Function, prepare?:Function, last?:bool
                     break;
                 }
             }
-            if (last){
+            if (!rlt && last){
                 rlt = target[target.length - 1];
             }
         }else{
