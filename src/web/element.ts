@@ -53,3 +53,20 @@ export function create(html:string, multiple?:boolean):Node{
 
     return multiple?rlt:rlt[0];
 }
+export function astyle(styles:any, val?:any) {
+    let style:any = null;
+    let props = (styles instanceof Array)?styles:[styles];
+    let el:Element = this;
+    let compStyle:CSSStyleDeclaration = window.getComputedStyle(el, null);
+    for (let i:number = 0; i < props.length; i++) {
+        style = compStyle.getPropertyValue(props[i]);
+        if (style != null) {
+            break;
+        }
+    }
+    if (val !== undefined){
+        return style == val;
+    }
+    return style;
+};
+
